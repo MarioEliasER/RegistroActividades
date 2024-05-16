@@ -15,6 +15,7 @@ builder.Services.AddDbContext<ItesrcneActividadesContext>(x =>
 x.UseMySql(connection, ServerVersion.AutoDetect(connection)));
 
 builder.Services.AddTransient<ActividadesRepository>();
+builder.Services.AddTransient<DepartamentosRepository>();
 builder.Services.AddSingleton<JwtHelper>();
 
 builder.Services.AddControllers();

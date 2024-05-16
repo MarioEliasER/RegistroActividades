@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RegistroActividades.Models.DTOs;
 using RegistroActividades.Models.Entities;
@@ -19,6 +20,7 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Post(DepartamentoDTO dto)
         {
             DepartamentoValidator validador = new();
@@ -40,6 +42,7 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Get(int id)
         {
             var departamento = repository.Get(id);
@@ -60,6 +63,7 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Put(DepartamentoDTO dto)
         {
             DepartamentoValidator validator = new DepartamentoValidator();
@@ -85,6 +89,7 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var entidaddepartamento = repository.Get(id);

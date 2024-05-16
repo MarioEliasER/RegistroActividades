@@ -21,25 +21,25 @@ namespace RegistroActividades.Controllers
             jwtHelper = helper;
         }
 
-        
         [HttpPost]
         public IActionResult Login(LoginDTO dto)
         {
-            var encrypt = Encriptacion.StringToSHA512(dto.Password);
-            var us = repository.GetAll().FirstOrDefault(x => x.Nombre == dto.Username && x.Password == encrypt);
-            if (us == null)
+            LoginValidator validator = new LoginValidator();
+            var resultado = validator.Validate(dto);
+            if (resultado.IsValid)
             {
-                return Unauthorized();
+                var encrypt = Encriptacion.StringToSHA512(dto.Password);
+                var us = repository.GetAll().FirstOrDefault(x => x.Username == dto.Username && x.Password == encrypt);
+                if (us == null)
+                {
+                    return Unauthorized();
+                }
+
+                var token = jwtHelper.GetToken(us.Username, us.IdSuperior == null ? "Administrador" : "Departamento", us.Id, new List<Claim>
+                { new Claim("Id", us.Id.ToString())});
+                return Ok(token);
             }
-
-            if (us.Nombre == "Director General")
-            {
-
-            }
-
-            var token = jwtHelper.GetToken(us.Nombre, us.Id == 1 ? "Admin" : "Usuario", new List<Claim>
-            { new Claim("Id", us.Id.ToString())});
-            return Ok(token);
+            return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
         }
     }
 }
