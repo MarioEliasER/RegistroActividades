@@ -18,15 +18,14 @@ namespace RegistroActividades.Controllers
             this.repository = repository;
         }
 
-        ActividadValidator validator = new ActividadValidator();
-
         [HttpPost]
         public IActionResult Post(ActividadDTO dto)
         {
-
+            ActividadValidator validator = new ActividadValidator();
             var resultado = validator.Validate(dto);
             if (resultado.IsValid)
             {
+                //var fecharealizacion = new DateOnly(dto.FechaRealizacion.Value.Year, dto.FechaRealizacion.Value.Month, dto.FechaRealizacion.Value.Day);
                 Actividades actividades = new Actividades()
                 {
                     Id = 0,
@@ -39,9 +38,33 @@ namespace RegistroActividades.Controllers
                     IdDepartamento = dto.IdDepartamento,
                 };
                 repository.Insert(actividades);
-                return Ok(actividades);
+                return Ok();
             }
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
+        }
+
+        [HttpGet("departamento/{iddepartamento}")]
+        public IActionResult GetByDepartamento(int iddepartamento)
+        {
+            var actividades = repository.GetAll().Where(x => x.IdDepartamento == iddepartamento);
+            if (actividades == null || !actividades.Any())
+            {
+                return NotFound();
+            }
+
+            var actividadesDTO = actividades.Select(x => new ActividadDTO
+            {
+                Id = x.Id,
+                Descripcion = x.Descripcion,
+                Titulo = x.Titulo,
+                Estado = x.Estado,
+                FechaActualizacion = x.FechaActualizacion,
+                FechaCreacion = x.FechaCreacion,
+                FechaRealizacion = x.FechaRealizacion,
+                IdDepartamento = x.IdDepartamento
+            });
+
+            return Ok(actividadesDTO);
         }
 
         [HttpGet("{id}")]
@@ -70,6 +93,7 @@ namespace RegistroActividades.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(ActividadDTO dto)
         {
+            ActividadValidator validator = new ActividadValidator();
             var resultado = validator.Validate(dto);
             if (resultado.IsValid)
             {
