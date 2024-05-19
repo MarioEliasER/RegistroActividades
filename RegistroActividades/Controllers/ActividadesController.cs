@@ -27,7 +27,8 @@ namespace RegistroActividades.Controllers
             }
             else
             {
-                throw new UnauthorizedAccessException("El usuario no está autenticado.");
+                //throw new UnauthorizedAccessException("El usuario no está autenticado.");
+                return 0;
             }
         }
 
