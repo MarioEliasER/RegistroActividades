@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RegistroActividades.Helpers;
 using RegistroActividades.Models.DTOs;
 using RegistroActividades.Models.Entities;
 using RegistroActividades.Models.Validators;
@@ -8,19 +9,21 @@ using RegistroActividades.Repositories;
 
 namespace RegistroActividades.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartamentosController : ControllerBase
     {
         public readonly DepartamentosRepository repository;
+        private readonly ActividadesRepository actividadesRepository;
 
-        public DepartamentosController(DepartamentosRepository repo)
+        public DepartamentosController(DepartamentosRepository departamentosRepository, ActividadesRepository actividadesRepository)
         {
-            repository = repo;
+            repository = departamentosRepository;
+            this.actividadesRepository = actividadesRepository;
         }
 
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
         public IActionResult Post(DepartamentoDTO dto)
         {
             DepartamentoValidator validador = new();
@@ -42,28 +45,25 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Administrador")]
         public IActionResult Get(int id)
         {
-            var departamento = repository.Get(id);
+            var departamento = repository.GetSubdepartamentos(id).Select(x => new DepartamentoDTO()
+            {
+                Nombre = x.Nombre,
+                Username = x.Username,
+                IdSuperior= x.IdSuperior,
+                Id = x.Id,
+                Password = x.Password,
+                DepartamentoSuperior = x.IdSuperiorNavigation?.Nombre
+            });
             if (departamento == null)
             {
                 return NotFound();
             }
-
-            var departamentoDTO = new DepartamentoDTO()
-            {
-                Id = departamento.Id,
-                IdSuperior = departamento.IdSuperior,
-                Username = departamento.Username,
-                Password = departamento.Password,
-                Nombre = departamento.Nombre
-            };
-            return Ok(departamentoDTO);
+            return Ok(departamento);
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Administrador")]
         public IActionResult Put(DepartamentoDTO dto)
         {
             DepartamentoValidator validator = new DepartamentoValidator();
@@ -77,9 +77,10 @@ namespace RegistroActividades.Controllers
                 }
                 else
                 {
+                    var encrypt = Encriptacion.StringToSHA512(dto.Password);
                     entidaddepartamento.Nombre = dto.Nombre;
                     entidaddepartamento.Username = dto.Username;
-                    entidaddepartamento.Password = dto.Password;
+                    entidaddepartamento.Password = encrypt;
                     entidaddepartamento.IdSuperior = dto.IdSuperior;
                     repository.Update(entidaddepartamento);
                     return Ok();
@@ -89,13 +90,17 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var entidaddepartamento = repository.Get(id);
             if (entidaddepartamento == null)
             {
                 return NotFound();
+            }
+            var actividadesdepartamento = actividadesRepository.GetAll().Where(x=>x.IdDepartamento == id);
+            foreach (var actividad in actividadesdepartamento)
+            {
+                actividadesRepository.Delete(actividad);
             }
             repository.Delete(entidaddepartamento);
             return Ok();

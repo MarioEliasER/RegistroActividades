@@ -1,4 +1,5 @@
-﻿using RegistroActividades.Models.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using RegistroActividades.Models.Entities;
 
 namespace RegistroActividades.Repositories
 {
@@ -37,6 +38,11 @@ namespace RegistroActividades.Repositories
         {
             Context.Departamentos.Remove(actividad);
             Context.SaveChanges();
+        }
+
+        public IEnumerable<Departamentos> GetSubdepartamentos(int id)
+        {
+            return Context.Departamentos.Include(x => x.IdSuperiorNavigation).Where(x => x.IdSuperior == id);
         }
     }
 }
