@@ -44,6 +44,21 @@ namespace RegistroActividades.Controllers
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
         }
 
+        [HttpGet]
+        public IActionResult GetAllDepartamentos()
+        {
+            var departamentos = repository.GetAll().Select(x => new DepartamentoDTO()
+            {
+                Nombre = x.Nombre,
+                Username = x.Username,
+                IdSuperior = x.IdSuperior,
+                Id = x.Id,
+                Password = x.Password,
+                DepartamentoSuperior = x.IdSuperiorNavigation?.Nombre
+            }).ToList();
+            return Ok(departamentos);
+        }
+
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
