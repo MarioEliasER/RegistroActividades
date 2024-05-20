@@ -17,5 +17,7 @@
         public DateTime FechaActualizacion { get; set; }
 
         public int Estado { get; set; }
+
+        public string Imagen { get; set; } = null!;
     }
 }

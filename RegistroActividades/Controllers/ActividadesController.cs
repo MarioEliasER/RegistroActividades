@@ -83,7 +83,7 @@ namespace RegistroActividades.Controllers
         }
 
         [HttpGet("departamento")]
-        public IActionResult GetByDepartamento()
+        public IActionResult GetAllByDepartamento()
         {
             var departamento = ObtenerIdDepartamento();
             var actividades = repository.GetAll().Where(x => x.IdDepartamento == departamento);
@@ -159,7 +159,7 @@ namespace RegistroActividades.Controllers
                         entidadactividad.Descripcion = dto.Descripcion;
                         entidadactividad.FechaCreacion = dto.FechaCreacion;
                         entidadactividad.FechaRealizacion = dto.FechaRealizacion;
-                        entidadactividad.FechaActualizacion = DateTime.Now;
+                        entidadactividad.FechaActualizacion = DateTime.UtcNow;
                         repository.Update(entidadactividad);
                         return Ok();
                     }
@@ -184,7 +184,7 @@ namespace RegistroActividades.Controllers
             if (entidadactividad.IdDepartamento == departamento)
             {
                 entidadactividad.Estado = 2;
-                entidadactividad.FechaActualizacion = DateTime.Now;
+                entidadactividad.FechaActualizacion = DateTime.UtcNow;
                 repository.Update(entidadactividad);
                 return Ok();
             }

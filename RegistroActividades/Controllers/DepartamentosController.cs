@@ -9,17 +9,17 @@ using RegistroActividades.Repositories;
 
 namespace RegistroActividades.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador, Usuario")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartamentosController : ControllerBase
     {
-        public readonly DepartamentosRepository repository;
+        public readonly DepartamentosRepository departamentosRepository;
         private readonly ActividadesRepository actividadesRepository;
 
         public DepartamentosController(DepartamentosRepository departamentosRepository, ActividadesRepository actividadesRepository)
         {
-            repository = departamentosRepository;
+            this.departamentosRepository = departamentosRepository;
             this.actividadesRepository = actividadesRepository;
         }
 
@@ -30,15 +30,16 @@ namespace RegistroActividades.Controllers
             var resultado = validador.Validate(dto);
             if (resultado.IsValid)
             {
+                var encrypt = Encriptacion.StringToSHA512(dto.Password);
                 Departamentos departamentos = new Departamentos()
                 {
                     Id = 0,
                     Nombre = dto.Nombre,
                     Username = dto.Username,
-                    Password = dto.Password,
+                    Password = encrypt,
                     IdSuperior = dto.IdSuperior
                 };
-                repository.Insert(departamentos);
+                departamentosRepository.Insert(departamentos);
                 return Ok(departamentos);
             }
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
@@ -47,7 +48,7 @@ namespace RegistroActividades.Controllers
         [HttpGet]
         public IActionResult GetAllDepartamentos()
         {
-            var departamentos = repository.GetAll().Select(x => new DepartamentoDTO()
+            var departamentos = departamentosRepository.GetAll().Select(x => new DepartamentoDTO()
             {
                 Nombre = x.Nombre,
                 Username = x.Username,
@@ -58,11 +59,30 @@ namespace RegistroActividades.Controllers
             }).ToList();
             return Ok(departamentos);
         }
+        [HttpGet("departamento/{id}")]
+        public IActionResult GetDepartamento(int id)
+        {
+            var depa = departamentosRepository.Get(id);
+            if (depa == null)
+            {
+                return NotFound();
+            }
+            var dto = new DepartamentoDTO()
+            {
+                Id = depa.Id,
+                Nombre = depa.Nombre,
+                Username = depa.Username,
+                Password = depa.Password,
+                DepartamentoSuperior = depa.IdSuperiorNavigation?.Nombre,
+                IdSuperior = depa.IdSuperior
+            };
+            return Ok(dto);
+        }
 
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            var departamento = repository.GetSubdepartamentos(id).Select(x => new DepartamentoDTO()
+            var departamento = departamentosRepository.GetSubdepartamentos(id).Select(x => new DepartamentoDTO()
             {
                 Nombre = x.Nombre,
                 Username = x.Username,
@@ -85,7 +105,7 @@ namespace RegistroActividades.Controllers
             var resultado = validator.Validate(dto);
             if (resultado.IsValid)
             {
-                var entidaddepartamento = repository.Get(dto.Id);
+                var entidaddepartamento = departamentosRepository.Get(dto.Id);
                 if (entidaddepartamento == null)
                 {
                     return NotFound();
@@ -97,7 +117,7 @@ namespace RegistroActividades.Controllers
                     entidaddepartamento.Username = dto.Username;
                     entidaddepartamento.Password = encrypt;
                     entidaddepartamento.IdSuperior = dto.IdSuperior;
-                    repository.Update(entidaddepartamento);
+                    departamentosRepository.Update(entidaddepartamento);
                     return Ok();
                 }
             }
@@ -107,7 +127,7 @@ namespace RegistroActividades.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var entidaddepartamento = repository.Get(id);
+            var entidaddepartamento = departamentosRepository.Get(id);
             if (entidaddepartamento == null)
             {
                 return NotFound();
@@ -117,7 +137,13 @@ namespace RegistroActividades.Controllers
             {
                 actividadesRepository.Delete(actividad);
             }
-            repository.Delete(entidaddepartamento);
+            var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
+            foreach (var departamento in subdepartamentos)
+            {
+                departamento.IdSuperior = departamento.IdSuperior;
+                departamentosRepository.Update(departamento);
+            }
+            departamentosRepository.Delete(entidaddepartamento);
             return Ok();
         }
     }
