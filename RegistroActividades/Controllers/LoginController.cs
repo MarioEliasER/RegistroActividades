@@ -36,7 +36,7 @@ namespace RegistroActividades.Controllers
                 }
 
                 var token = jwtHelper.GetToken(us.Username, us.IdSuperior == null ? "Administrador" : "Departamento", us.Id, new List<Claim>
-                { new Claim("Id", us.Id.ToString())});
+                { new Claim("Id", us.Id.ToString()), new Claim("IdSuperior", us.IdSuperior.ToString())});
                 return Ok(token);
             }
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));

@@ -9,7 +9,7 @@ using RegistroActividades.Repositories;
 
 namespace RegistroActividades.Controllers
 {
-    [Authorize(Roles = "Administrador, Usuario")]
+    [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartamentosController : ControllerBase
