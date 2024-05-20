@@ -35,6 +35,10 @@ namespace RegistroActividades.Controllers
         [HttpPost]
         public IActionResult Post(ActividadDTO dto)
         {
+            if (!System.IO.Directory.Exists("wwwroot/imagenes"))
+            {
+                System.IO.Directory.CreateDirectory("wwwroot/imagenes");
+            }
             ActividadValidator validator = new ActividadValidator();
             var departamento = ObtenerIdDepartamento();
             var resultado = validator.Validate(dto);
@@ -52,9 +56,70 @@ namespace RegistroActividades.Controllers
                     IdDepartamento = departamento,
                 };
                 repository.Insert(actividades);
+                string imageName = $"{actividades.Id}_apiequipo10.jpg";
+                string imagePath = $"wwwroot/imagenes/{actividades.Id}.jpg";
+                byte[] imageBytes = Convert.FromBase64String(dto.Imagen);
+                System.IO.File.WriteAllBytes(imagePath, imageBytes);
                 return Ok();
             }
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
+        }
+        
+        [HttpGet("organigrama/{departamentoId}")
+        public IActionResult GetActividadesPorDepartamento(int departamentoId)
+        {
+            try
+            {
+                // Obtener el departamento solicitado
+                var departamento = _dbContext.Departamentos.FirstOrDefault(d => d.Id == departamentoId);
+                if (departamento == null)
+                {
+                    return NotFound();
+                }
+
+                // Obtener todos los departamentos hijos (incluido el departamento actual)
+                var departamentosHijos = ObtenerDepartamentosHijos(departamento);
+
+                // Obtener todas las actividades que pertenecen a los departamentos hijos
+                var actividades = _dbContext.Actividades
+                    .Where(a => departamentosHijos.Any(d => d.Id == a.DepartamentoId))
+                    .ToList();
+
+                // Mapear las actividades a DTOs si es necesario
+                var actividadesDTO = actividades.Select(a => new ActividadDTO
+                {
+                    Id = a.Id,
+                    Titulo = a.Titulo,
+                    Descripcion = a.Descripcion,
+                    FechaRealizacion = a.FechaRealizacion,
+                    FechaCreacion = a.FechaCreacion,
+                    FechaActualizacion = a.FechaActualizacion,
+                    Estado = a.Estado,
+                    DepartamentoId = a.DepartamentoId,
+                    Departamento = a.Departamento.Nombre, // Suponiendo que tienes una propiedad "Nombre" en tu modelo Departamento
+                    Imagen = a.Imagen
+                }).ToList();
+
+                return Ok(actividadesDTO);
+            }
+            catch (Exception ex)
+            {
+                // Manejar errores según tus requisitos
+                return InternalServerError(ex);
+            }
+        }
+
+        // Método para obtener todos los departamentos hijos (incluido el departamento actual) recursivamente
+        private List<Departamento> ObtenerDepartamentosHijos(Departamento departamento)
+        {
+            var departamentosHijos = new List<Departamento> { departamento };
+
+            foreach (var hijo in departamento.DepartamentosHijos)
+            {
+                departamentosHijos.AddRange(ObtenerDepartamentosHijos(hijo));
+            }
+
+            return departamentosHijos;
         }
 
         [HttpGet("departamentos")]
@@ -78,7 +143,6 @@ namespace RegistroActividades.Controllers
                 FechaRealizacion = x.FechaRealizacion,
                 IdDepartamento = x.IdDepartamento
             });
-
             return Ok(actividadesDTO);
         }
 
@@ -103,7 +167,6 @@ namespace RegistroActividades.Controllers
                 FechaRealizacion = x.FechaRealizacion,
                 IdDepartamento = x.IdDepartamento
             });
-
             return Ok(actividadesDTO);
         }
 
