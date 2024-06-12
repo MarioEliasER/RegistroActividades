@@ -112,10 +112,10 @@ namespace RegistroActividades.Controllers
                 }
                 else
                 {
-                    var encrypt = Encriptacion.StringToSHA512(dto.Password);
+                    //var encrypt = Encriptacion.StringToSHA512(dto.Password);
                     entidaddepartamento.Nombre = dto.Nombre;
                     entidaddepartamento.Username = dto.Username;
-                    entidaddepartamento.Password = encrypt;
+                    //entidaddepartamento.Password = dto.Password;
                     entidaddepartamento.IdSuperior = dto.IdSuperior;
                     departamentosRepository.Update(entidaddepartamento);
                     return Ok();
