@@ -8,7 +8,7 @@ namespace RegistroActividades.Models.Validators
         public ActividadValidator()
         {
             RuleFor(x => x.Titulo).NotEmpty().WithMessage("El titulo no puede estar vacío.");
-            RuleFor(x => x.Estado).GreaterThanOrEqualTo(3).LessThanOrEqualTo(3).WithMessage("El estado no puede ser menor que 0 ni mayor que 3.");
+            RuleFor(x => x.Estado).GreaterThanOrEqualTo(0).LessThanOrEqualTo(2).WithMessage("El estado no puede ser menor que 0 ni mayor que 2.");
             RuleFor(x => x.IdDepartamento).NotNull().WithMessage("El departamento no puede estar vacío.");
         }
     }
