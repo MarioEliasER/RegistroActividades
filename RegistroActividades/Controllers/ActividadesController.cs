@@ -260,9 +260,13 @@ namespace RegistroActividades.Controllers
         }
         public  string ConvertImageToBase64(string imagePath)
         {
-            byte[] imageArray = System.IO.File.ReadAllBytes(imagePath);
-            string base64ImageRepresentation = Convert.ToBase64String(imageArray);
-            return base64ImageRepresentation;
+            if (System.IO.File.Exists(imagePath))
+            {
+                byte[] imageArray = System.IO.File.ReadAllBytes(imagePath);
+                string base64ImageRepresentation = Convert.ToBase64String(imageArray);
+                return base64ImageRepresentation;
+            }
+            return "";
         }
     }
 }
