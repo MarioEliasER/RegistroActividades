@@ -141,8 +141,9 @@ namespace RegistroActividades.Controllers
                 FechaActualizacion = x.FechaActualizacion,
                 FechaCreacion = x.FechaCreacion,
                 FechaRealizacion = x.FechaRealizacion,
-                IdDepartamento = x.IdDepartamento
-            });
+                IdDepartamento = x.IdDepartamento,
+                Imagen = ConvertImageToBase64($"wwwroot/imagenes/{x.Id}.jpg")
+            }) ;
             return Ok(actividadesDTO);
         }
 
@@ -191,7 +192,8 @@ namespace RegistroActividades.Controllers
                     FechaActualizacion = actividad.FechaActualizacion,
                     FechaCreacion = actividad.FechaCreacion,
                     FechaRealizacion = actividad.FechaRealizacion,
-                    IdDepartamento = actividad.IdDepartamento
+                    IdDepartamento = actividad.IdDepartamento,
+                    Imagen = ConvertImageToBase64($"wwwroot/imagenes/{actividad.Id}.jpg")
                 };
                 return Ok(actividadDTO);
             }
@@ -255,6 +257,12 @@ namespace RegistroActividades.Controllers
             {
                 return Unauthorized();
             }
+        }
+        public  string ConvertImageToBase64(string imagePath)
+        {
+            byte[] imageArray = System.IO.File.ReadAllBytes(imagePath);
+            string base64ImageRepresentation = Convert.ToBase64String(imageArray);
+            return base64ImageRepresentation;
         }
     }
 }
