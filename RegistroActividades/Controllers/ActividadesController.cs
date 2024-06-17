@@ -64,7 +64,7 @@ namespace RegistroActividades.Controllers
             }
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
         }
-        
+
         //[HttpGet("organigrama/{departamentoId}")]
         //public IActionResult GetActividadesPorDepartamento(int departamentoId)
         //{
@@ -149,7 +149,7 @@ namespace RegistroActividades.Controllers
                 FechaRealizacion = x.FechaRealizacion,
                 IdDepartamento = x.IdDepartamento,
                 Imagen = ConvertImageToBase64($"wwwroot/imagenes/{x.Id}.jpg")
-            }) ;
+            });
             return Ok(actividadesDTO);
         }
 
@@ -158,6 +158,30 @@ namespace RegistroActividades.Controllers
         {
             var departamento = ObtenerIdDepartamento();
             var actividades = repository.GetAll().Where(x => x.IdDepartamento == departamento);
+            if (actividades == null || !actividades.Any())
+            {
+                return NotFound();
+            }
+
+            var actividadesDTO = actividades.Select(x => new ActividadDTO
+            {
+                Id = x.Id,
+                Descripcion = x.Descripcion,
+                Titulo = x.Titulo,
+                Estado = x.Estado,
+                FechaActualizacion = x.FechaActualizacion,
+                FechaCreacion = x.FechaCreacion,
+                FechaRealizacion = x.FechaRealizacion,
+                IdDepartamento = x.IdDepartamento
+            });
+            return Ok(actividadesDTO);
+        }
+
+        [HttpGet("departamento/borradores")]
+        public IActionResult GetBorradores()
+        {
+            var departamento = ObtenerIdDepartamento();
+            var actividades = repository.GetAll().Where(x => x.IdDepartamento == departamento && x.Estado == 1);
             if (actividades == null || !actividades.Any())
             {
                 return NotFound();
