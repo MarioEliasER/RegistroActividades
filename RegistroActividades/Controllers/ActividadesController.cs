@@ -126,10 +126,16 @@ namespace RegistroActividades.Controllers
         public IActionResult GetByDepartamentos()
         {
             var departamento = ObtenerIdDepartamento();
+            if(departamento == 0)
+            {
+                var ActividadesDTO = new List<ActividadDTO>();
+                return Ok(ActividadesDTO);
+            }
             var actividades = repository.GetAll().Where(x => x.IdDepartamento >= departamento);
             if (actividades == null || !actividades.Any())
             {
-                return NotFound();
+                var ActividadesDTO = new List<ActividadDTO>();
+                return Ok(ActividadesDTO);
             }
 
             var actividadesDTO = actividades.Select(x => new ActividadDTO
@@ -206,6 +212,10 @@ namespace RegistroActividades.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(ActividadDTO dto)
         {
+            if (!System.IO.Directory.Exists("wwwroot/imagenes"))
+            {
+                System.IO.Directory.CreateDirectory("wwwroot/imagenes");
+            }
             ActividadValidator validator = new ActividadValidator();
             var departamento = ObtenerIdDepartamento();
             var resultado = validator.Validate(dto);
@@ -226,6 +236,14 @@ namespace RegistroActividades.Controllers
                         entidadactividad.FechaRealizacion = dto.FechaRealizacion;
                         entidadactividad.FechaActualizacion = DateTime.UtcNow;
                         repository.Update(entidadactividad);
+                        if (string.IsNullOrWhiteSpace(dto.Imagen))
+                        {
+                            string imageName = $"{dto.Id}_apiequipo10.jpg";
+                            string imagePath = $"wwwroot/imagenes/{dto.Id}.jpg";
+                            byte[] imageBytes = Convert.FromBase64String(dto.Imagen);
+                            System.IO.File.WriteAllBytes(imagePath, imageBytes);
+                        }
+                        
                         return Ok();
                     }
                     else

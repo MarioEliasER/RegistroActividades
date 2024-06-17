@@ -14,8 +14,8 @@ var connection = builder.Configuration.GetConnectionString("registroactividades"
 builder.Services.AddDbContext<ItesrcneActividadesContext>(x =>
 x.UseMySql(connection, ServerVersion.AutoDetect(connection)));
 
-builder.Services.AddTransient<ActividadesRepository>();
-builder.Services.AddTransient<DepartamentosRepository>();
+builder.Services.AddScoped<ActividadesRepository>();
+builder.Services.AddScoped<DepartamentosRepository>();
 builder.Services.AddSingleton<JwtHelper>();
 
 builder.Services.AddControllers();
