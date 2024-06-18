@@ -126,7 +126,7 @@ namespace RegistroActividades.Controllers
         public IActionResult GetByDepartamentos()
         {
             var departamento = ObtenerIdDepartamento();
-            if(departamento == 0)
+            if (departamento == 0)
             {
                 var ActividadesDTO = new List<ActividadDTO>();
                 return Ok(ActividadesDTO);
@@ -267,7 +267,7 @@ namespace RegistroActividades.Controllers
                             byte[] imageBytes = Convert.FromBase64String(dto.Imagen);
                             System.IO.File.WriteAllBytes(imagePath, imageBytes);
                         }
-                        
+
                         return Ok();
                     }
                     else
@@ -288,7 +288,7 @@ namespace RegistroActividades.Controllers
             {
                 return NotFound();
             }
-            if (entidadactividad.IdDepartamento == departamento)
+            if (entidadactividad.IdDepartamento == departamento || departamento == 1)
             {
                 entidadactividad.Estado = 2;
                 entidadactividad.FechaActualizacion = DateTime.UtcNow;

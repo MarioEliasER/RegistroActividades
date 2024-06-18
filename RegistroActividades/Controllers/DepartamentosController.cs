@@ -127,65 +127,65 @@ namespace RegistroActividades.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            //var entidaddepartamento = departamentosRepository.Get(id);
-            //if (entidaddepartamento == null)
-            //{
-            //    return NotFound();
-            //}
-            //var actividadesdepartamento = actividadesRepository.GetAll().Where(x=>x.IdDepartamento == id);
-            //if(actividadesdepartamento != null)
-            //{
-            //    foreach (var actividad in actividadesdepartamento)
-            //    {
-            //        actividadesRepository.Delete(actividad);
-            //    }
-            //}
-
-            //var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
-            //foreach (var departamento in subdepartamentos)
-            //{
-            //    departamento.IdSuperior = entidaddepartamento.IdSuperior;
-            //    departamentosRepository.Update(departamento);
-            //}
-            //departamentosRepository.Delete(entidaddepartamento);
-            //return Ok();
-            using (var transaction = departamentosRepository.Context.Database.BeginTransaction())
+            var entidaddepartamento = departamentosRepository.Get(id);
+            if (entidaddepartamento == null)
             {
-                try
+                return NotFound();
+            }
+            var actividadesdepartamento = actividadesRepository.GetAll().Where(x => x.IdDepartamento == id && x.Estado ==1);
+            if (actividadesdepartamento != null)
+            {
+                foreach (var actividad in actividadesdepartamento)
                 {
-                    var entidaddepartamento = departamentosRepository.Get(id);
-                    if (entidaddepartamento == null)
-                    {
-                        return NotFound();
-                    }
-
-                    var actividadesdepartamento = actividadesRepository.GetAll().Where(x => x.IdDepartamento == id);
-                    if (actividadesdepartamento != null && actividadesdepartamento.Any())
-                    {
-                        foreach (var actividad in actividadesdepartamento)
-                        {
-                            actividadesRepository.Delete(actividad);
-                        }
-                    }
-
-                    var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
-                    foreach (var departamento in subdepartamentos)
-                    {
-                        departamento.IdSuperior = entidaddepartamento.IdSuperior;
-                        departamentosRepository.Update(departamento);
-                    }
-
-                    departamentosRepository.Delete(entidaddepartamento);
-
-                    transaction.Commit();
-                    return Ok();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the department.");
+                    actividadesRepository.Delete(actividad);
                 }
             }
+
+            var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
+            foreach (var departamento in subdepartamentos)
+            {
+                departamento.IdSuperior = entidaddepartamento.IdSuperior;
+                departamentosRepository.Update(departamento);
+            }
+            departamentosRepository.Delete(entidaddepartamento);
+            return Ok();
+            //using (var transaction = departamentosRepository.Context.Database.BeginTransaction())
+            //{
+            //    try
+            //    {
+            //        var entidaddepartamento = departamentosRepository.Get(id);
+            //        if (entidaddepartamento == null)
+            //        {
+            //            return NotFound();
+            //        }
+
+            //        var actividadesdepartamento = actividadesRepository.GetAll().Where(x => x.IdDepartamento == id);
+            //        if (actividadesdepartamento != null && actividadesdepartamento.Any())
+            //        {
+            //            foreach (var actividad in actividadesdepartamento)
+            //            {
+            //                actividadesRepository.Delete(actividad);
+            //            }
+            //        }
+
+            //        var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
+            //        foreach (var departamento in subdepartamentos)
+            //        {
+            //            departamento.IdSuperior = entidaddepartamento.IdSuperior;
+            //            departamentosRepository.Update(departamento);
+            //        }
+
+            //        departamentosRepository.Delete(entidaddepartamento);
+
+            //        transaction.Commit();
+            //        return Ok();
+            //    }
+            //    catch
+            //    {
+            //        transaction.Rollback();
+            //        return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the department.");
+            //    }
+            //}
         }
     }
 }
