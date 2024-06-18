@@ -300,7 +300,9 @@ namespace RegistroActividades.Controllers
                 return Unauthorized();
             }
         }
-        public  string ConvertImageToBase64(string imagePath)
+
+        [HttpGet("ConvertImage")]
+        public string ConvertImageToBase64(string imagePath)
         {
             if (System.IO.File.Exists(imagePath))
             {

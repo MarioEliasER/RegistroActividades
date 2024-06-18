@@ -9,7 +9,6 @@ using RegistroActividades.Repositories;
 
 namespace RegistroActividades.Controllers
 {
-    [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartamentosController : ControllerBase
@@ -23,6 +22,7 @@ namespace RegistroActividades.Controllers
             this.actividadesRepository = actividadesRepository;
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPost]
         public IActionResult Post(DepartamentoDTO dto)
         {
@@ -59,6 +59,7 @@ namespace RegistroActividades.Controllers
             }).ToList();
             return Ok(departamentos);
         }
+
         [HttpGet("departamento/{id}")]
         public IActionResult GetDepartamento(int id)
         {
@@ -98,6 +99,7 @@ namespace RegistroActividades.Controllers
             return Ok(departamento);
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpPut("{id}")]
         public IActionResult Put(DepartamentoDTO dto)
         {
@@ -124,6 +126,7 @@ namespace RegistroActividades.Controllers
             return BadRequest(resultado.Errors.Select(x => x.ErrorMessage));
         }
 
+        [Authorize(Roles = "Administrador")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
