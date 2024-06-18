@@ -1,6 +1,6 @@
 ﻿namespace RegistroActividades.Models.DTOs
 {
-    public class DepartamentoSinContraseñaDTO
+    public class DepartamentoDTOAdd
     {
         public int Id { get; set; }
 
@@ -8,8 +8,8 @@
 
         public string Username { get; set; } = null!;
 
-        public int? IdSuperior { get; set; }
+        public string Password { get; set; } = null!;
 
-        public string? DepartamentoSuperior { get; set; }
+        public int? IdSuperior { get; set; }
     }
 }
