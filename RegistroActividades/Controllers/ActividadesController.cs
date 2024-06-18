@@ -52,7 +52,7 @@ namespace RegistroActividades.Controllers
                     FechaCreacion = dto.FechaCreacion,
                     FechaActualizacion = dto.FechaActualizacion,
                     Estado = dto.Estado,
-                    FechaRealizacion = dto.FechaRealizacion,
+                    FechaRealizacion = dto.FechaRealizacion.HasValue ? DateOnly.FromDateTime(dto.FechaRealizacion.Value) : (DateOnly?)null,
                     IdDepartamento = departamento,
                 };
                 repository.Insert(actividades);
@@ -146,7 +146,7 @@ namespace RegistroActividades.Controllers
                 Estado = x.Estado,
                 FechaActualizacion = x.FechaActualizacion,
                 FechaCreacion = x.FechaCreacion,
-                FechaRealizacion = x.FechaRealizacion,
+                FechaRealizacion = x.FechaRealizacion.HasValue ? x.FechaRealizacion.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null,
                 IdDepartamento = x.IdDepartamento,
                 Imagen = ConvertImageToBase64($"wwwroot/imagenes/{x.Id}.jpg")
             });
@@ -171,7 +171,7 @@ namespace RegistroActividades.Controllers
                 Estado = x.Estado,
                 FechaActualizacion = x.FechaActualizacion,
                 FechaCreacion = x.FechaCreacion,
-                FechaRealizacion = x.FechaRealizacion,
+                FechaRealizacion = x.FechaRealizacion.HasValue ? x.FechaRealizacion.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null,
                 IdDepartamento = x.IdDepartamento
             });
             return Ok(actividadesDTO);
@@ -195,7 +195,7 @@ namespace RegistroActividades.Controllers
                 Estado = x.Estado,
                 FechaActualizacion = x.FechaActualizacion,
                 FechaCreacion = x.FechaCreacion,
-                FechaRealizacion = x.FechaRealizacion,
+                FechaRealizacion = x.FechaRealizacion.HasValue ? x.FechaRealizacion.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null,
                 IdDepartamento = x.IdDepartamento
             });
             return Ok(actividadesDTO);
@@ -221,7 +221,7 @@ namespace RegistroActividades.Controllers
                     Estado = actividad.Estado,
                     FechaActualizacion = actividad.FechaActualizacion,
                     FechaCreacion = actividad.FechaCreacion,
-                    FechaRealizacion = actividad.FechaRealizacion,
+                    FechaRealizacion = actividad.FechaRealizacion.HasValue ? actividad.FechaRealizacion.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null,
                     IdDepartamento = actividad.IdDepartamento,
                     Imagen = ConvertImageToBase64($"wwwroot/imagenes/{actividad.Id}.jpg")
                 };
@@ -257,7 +257,7 @@ namespace RegistroActividades.Controllers
                         entidadactividad.Titulo = dto.Titulo;
                         entidadactividad.Descripcion = dto.Descripcion;
                         entidadactividad.FechaCreacion = dto.FechaCreacion;
-                        entidadactividad.FechaRealizacion = dto.FechaRealizacion;
+                        entidadactividad.FechaRealizacion = dto.FechaRealizacion.HasValue ? DateOnly.FromDateTime(dto.FechaRealizacion.Value) : (DateOnly?)null;
                         entidadactividad.FechaActualizacion = DateTime.UtcNow;
                         repository.Update(entidadactividad);
                         if (string.IsNullOrWhiteSpace(dto.Imagen))
@@ -300,7 +300,9 @@ namespace RegistroActividades.Controllers
                 return Unauthorized();
             }
         }
-        public  string ConvertImageToBase64(string imagePath)
+
+        [HttpGet("ConvertImage")]
+        public string ConvertImageToBase64(string imagePath)
         {
             if (System.IO.File.Exists(imagePath))
             {

@@ -38,5 +38,10 @@ namespace RegistroActividades.Repositories
             Context.Actividades.Remove(actividad);
             Context.SaveChanges();
         }
+
+        public void SaveChanges()
+        {
+            Context.SaveChanges();
+        }
     }
 }
