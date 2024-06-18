@@ -260,7 +260,7 @@ namespace RegistroActividades.Controllers
                         entidadactividad.FechaRealizacion = dto.FechaRealizacion.HasValue ? DateOnly.FromDateTime(dto.FechaRealizacion.Value) : (DateOnly?)null;
                         entidadactividad.FechaActualizacion = DateTime.UtcNow;
                         repository.Update(entidadactividad);
-                        if (string.IsNullOrWhiteSpace(dto.Imagen))
+                        if (!string.IsNullOrWhiteSpace(dto.Imagen))
                         {
                             string imageName = $"{dto.Id}_apiequipo10.jpg";
                             string imagePath = $"wwwroot/imagenes/{dto.Id}.jpg";
