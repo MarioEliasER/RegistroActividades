@@ -92,7 +92,7 @@ namespace RegistroActividades.Controllers
         public IActionResult GetBorradores()
         {
             var departamento = ObtenerIdDepartamento();
-            var actividades = repository.GetAll().Where(x => x.IdDepartamento == departamento && x.Estado == 1);
+            var actividades = repository.GetAll().Where(x => x.IdDepartamento == departamento && x.Estado == 0);
             if (actividades == null || !actividades.Any())
             {
                 return NotFound();
@@ -168,7 +168,6 @@ namespace RegistroActividades.Controllers
                     IdDepartamento = departamento,
                 };
                 repository.Insert(actividades);
-                string imageName = $"{actividades.Id}_apiequipo10.jpg";
                 string imagePath = $"wwwroot/imagenes/{actividades.Id}.jpg";
                 byte[] imageBytes = Convert.FromBase64String(dto.Imagen);
                 System.IO.File.WriteAllBytes(imagePath, imageBytes);
@@ -237,6 +236,12 @@ namespace RegistroActividades.Controllers
                 entidadactividad.Estado = 2;
                 entidadactividad.FechaActualizacion = DateTime.UtcNow;
                 repository.Update(entidadactividad);
+
+                string imagePath = $"wwwroot/imagenes/{entidadactividad.Id}.jpg";
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
                 return Ok();
             }
             else
