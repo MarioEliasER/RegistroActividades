@@ -23,10 +23,27 @@ namespace RegistroActividades.Controllers
             this.actividadesRepository = actividadesRepository;
         }
 
+        private int ObtenerIdDepartamento()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var departamento = int.Parse(User.FindFirst("IdDepartamento")?.Value);
+                return departamento;
+            }
+            else
+            {
+                //throw new UnauthorizedAccessException("El usuario no está autenticado.");
+                return 0;
+            }
+        }
+
         [Authorize(Roles = "Administrador")]
         [HttpPost]
         public IActionResult Post(DepartamentoDTOAdd dto)
         {
+            var iddepa = ObtenerIdDepartamento();
+            var usuario = departamentosRepository.Get(iddepa);
+            if (usuario.IdSuperior != null) return Forbid();
             DepartamentoAddValidator validador = new();
             var resultado = validador.Validate(dto);
             if (resultado.IsValid)
@@ -49,7 +66,7 @@ namespace RegistroActividades.Controllers
         [HttpGet]
         public IActionResult GetAllDepartamentos()
         {
-            var departamentos = departamentosRepository.GetAll().Where(x => x.Username.Contains("@apiequipo10")).Select(x => new DepartamentoDTO()
+            var departamentos = departamentosRepository.GetAll().Where(x => x.Username.EndsWith("@apiequipo10.com")).Select(x => new DepartamentoDTO()
             {
                 Nombre = x.Nombre,
                 Username = x.Username,
@@ -127,61 +144,50 @@ namespace RegistroActividades.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Administrador")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            //var entidaddepartamento = departamentosRepository.Get(id);
-            //if (entidaddepartamento == null)
-            //{
-            //    return NotFound();
-            //}
-            //var actividadesdepartamento = actividadesRepository.GetAll().Where(x=>x.IdDepartamento == id);
-            //if(actividadesdepartamento != null)
-            //{
-            //    foreach (var actividad in actividadesdepartamento)
-            //    {
-            //        actividadesRepository.Delete(actividad);
-            //    }
-            //}
-
-            //var subdepartamentos = departamentosRepository.GetSubdepartamentos(entidaddepartamento.Id);
-            //foreach (var departamento in subdepartamentos)
-            //{
-            //    departamento.IdSuperior = entidaddepartamento.IdSuperior;
-            //    departamentosRepository.Update(departamento);
-            //}
-            //departamentosRepository.Delete(entidaddepartamento);
-            //return Ok();
-            using (var transaction = departamentosRepository.Context.Database.BeginTransaction())
+            var context = HttpContext;
+            var idusuario = ObtenerIdDepartamento();
+            var usuario = await departamentosRepository.GetIncludeActividades(id);
+            if (usuario == null)
             {
-                try
+                return BadRequest();
+            }
+            if (usuario.IdSuperior == null)
+            {
+                return Forbid();
+            }
+            var actividades = usuario.Actividades.ToList();
+
+            foreach (var actividad in actividades)
+            {
+                actividad.Estado = 2;
+                actividadesRepository.Update(actividad);
+            }
+
+            var scopeFactory = HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
+
+            _ = Task.Run(async () =>
+            {
+                // Crear un nuevo scope para la tarea en segundo plano
+                using (var scope = scopeFactory.CreateScope())
                 {
-                    var entidaddepartamento = departamentosRepository.Get(id);
-                    if (entidaddepartamento == null)
+                    var scopedDepartamentosRepository = scope.ServiceProvider.GetRequiredService<DepartamentosRepository>();
+
+                    try
                     {
-                        return NotFound();
-                    }
+                        await Task.Delay(7000); // Espera de 11 segundos
 
-                    var actividadesdepartamento = actividadesRepository.GetAll().Where(x => x.IdDepartamento == id).ToList();
-                    if (actividadesdepartamento.Any())
+                        scopedDepartamentosRepository.DeleteDepartment(id);
+                    }
+                    catch (Exception ex)
                     {
-                        foreach (var actividad in actividadesdepartamento)
-                        {
-                            actividadesRepository.Delete(actividad);
-                        }
-                        actividadesRepository.SaveChanges();
+                        // Maneja la excepción, registra o envía notificación
+                        Console.WriteLine($"Error during background operation: {ex.Message}");
                     }
-
-            //        departamentosRepository.Delete(entidaddepartamento);
-
-            //        transaction.Commit();
-            //        return Ok();
-            //    }
-            //    catch
-            //    {
-            //        transaction.Rollback();
-            //        return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the department.");
-            //    }
-            //}
+                }
+            });
+            return Ok();
         }
     }
 }
