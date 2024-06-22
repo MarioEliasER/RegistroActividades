@@ -44,5 +44,10 @@ namespace RegistroActividades.Repositories
         {
             return Context.Departamentos.Include(x => x.IdSuperiorNavigation).Where(x => x.IdSuperior == id);
         }
+
+        public async Task<Departamentos?> GetIncludeActividades(int id)
+        {
+            return Context.Departamentos.Include(x => x.Actividades).Include(x => x.InverseIdSuperiorNavigation).FirstOrDefault(x => x.Id == id);
+        }
     }
 }
