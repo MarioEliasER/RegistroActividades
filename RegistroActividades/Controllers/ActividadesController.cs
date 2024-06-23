@@ -107,7 +107,8 @@ namespace RegistroActividades.Controllers
                 FechaActualizacion = x.FechaActualizacion,
                 FechaCreacion = x.FechaCreacion,
                 FechaRealizacion = x.FechaRealizacion.HasValue ? x.FechaRealizacion.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null,
-                IdDepartamento = x.IdDepartamento
+                IdDepartamento = x.IdDepartamento,
+                Imagen = ConvertImageToBase64($"wwwroot/imagenes/{x.Id}.jpg")
             });
             return Ok(actividadesDTO);
         }
@@ -200,6 +201,7 @@ namespace RegistroActividades.Controllers
                         entidadactividad.Titulo = dto.Titulo;
                         entidadactividad.Descripcion = dto.Descripcion;
                         entidadactividad.FechaCreacion = dto.FechaCreacion;
+                        entidadactividad.Estado = dto.Estado;
                         entidadactividad.FechaRealizacion = dto.FechaRealizacion.HasValue ? DateOnly.FromDateTime(dto.FechaRealizacion.Value) : (DateOnly?)null;
                         entidadactividad.FechaActualizacion = DateTime.UtcNow;
                         repository.Update(entidadactividad);

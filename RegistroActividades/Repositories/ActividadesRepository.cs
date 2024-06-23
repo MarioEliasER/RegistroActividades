@@ -50,7 +50,6 @@ namespace RegistroActividades.Repositories
                     hijos.AddRange(dep.InverseIdSuperiorNavigation);
                 }
             }
-            //var hijos = ctx.
             return listactividades.Where(x=>x.FechaActualizacion>fecha &&( x.Estado == 1 || x.Estado == 2)).OrderByDescending(x=>x.FechaRealizacion);
         }
 
